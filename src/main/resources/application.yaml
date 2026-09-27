@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: rag-engine
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+rag:
+  chunking:
+    fixed-size:
+      chunk-size: 500
+      overlap: 50
+
+  embedding:
+    provider: local
+    model: local-v1
+    dimensions: 8
+    batch-size: 3
+    timeout: 5s
