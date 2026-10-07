@@ -19,7 +19,15 @@ rag:
 
   embedding:
     provider: local
-    model: local-v1
+    model: fake-v1
     dimensions: 8
     batch-size: 3
     timeout: 5s
+
+    retry:
+      max-attempts: 3
+      initial-backoff: 200ms
+      max-backoff: 2s
+
+    rate-limit:
+      interval: 100ms

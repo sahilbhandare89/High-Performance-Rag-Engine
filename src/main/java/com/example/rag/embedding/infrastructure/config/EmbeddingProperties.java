@@ -1,5 +1,6 @@
 package com.example.rag.embedding.infrastructure.config;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -26,6 +27,15 @@ public class EmbeddingProperties {
 
     @NotNull
     private Duration timeout;
+
+    @Valid
+    @NotNull
+    private RetryProperties retry = new RetryProperties();
+
+    @Valid
+    @NotNull
+    private RateLimitProperties rateLimit =
+            new RateLimitProperties();
 
     public String getProvider() {
         return provider;
@@ -65,5 +75,71 @@ public class EmbeddingProperties {
 
     public void setTimeout(Duration timeout) {
         this.timeout = timeout;
+    }
+
+    public RetryProperties getRetry() {
+        return retry;
+    }
+
+    public void setRetry(RetryProperties retry) {
+        this.retry = retry;
+    }
+
+    public RateLimitProperties getRateLimit() {
+        return rateLimit;
+    }
+
+    public void setRateLimit(RateLimitProperties rateLimit) {
+        this.rateLimit = rateLimit;
+    }
+
+    public static class RetryProperties {
+
+        @Positive
+        private int maxAttempts;
+
+        @NotNull
+        private Duration initialBackoff;
+
+        @NotNull
+        private Duration maxBackoff;
+
+        public int getMaxAttempts() {
+            return maxAttempts;
+        }
+
+        public void setMaxAttempts(int maxAttempts) {
+            this.maxAttempts = maxAttempts;
+        }
+
+        public Duration getInitialBackoff() {
+            return initialBackoff;
+        }
+
+        public void setInitialBackoff(Duration initialBackoff) {
+            this.initialBackoff = initialBackoff;
+        }
+
+        public Duration getMaxBackoff() {
+            return maxBackoff;
+        }
+
+        public void setMaxBackoff(Duration maxBackoff) {
+            this.maxBackoff = maxBackoff;
+        }
+    }
+
+    public static class RateLimitProperties {
+
+        @NotNull
+        private Duration interval;
+
+        public Duration getInterval() {
+            return interval;
+        }
+
+        public void setInterval(Duration interval) {
+            this.interval = interval;
+        }
     }
 }
