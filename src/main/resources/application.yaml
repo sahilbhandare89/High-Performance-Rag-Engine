@@ -31,3 +31,44 @@ rag:
 
     rate-limit:
       interval: 100ms
+
+#spring:
+#  application:
+#    name: rag-engine
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/rag
+#    username: rag
+#    password: rag
+#
+#server:
+#  port: 8080
+#
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info
+#
+#rag:
+#  chunking:
+#    fixed-size:
+#      chunk-size: 500
+#      overlap: 50
+#
+#  vector:
+#    store: pgvector
+#
+#  embedding:
+#    provider: ollama
+#    model: nomic-embed-text
+#    dimensions: 768
+#    batch-size: 16
+#    timeout: 30s
+#
+#    retry:
+#      max-attempts: 3
+#      initial-backoff: 200ms
+#      max-backoff: 2s
+#
+#    rate-limit:
+#      interval: 100ms

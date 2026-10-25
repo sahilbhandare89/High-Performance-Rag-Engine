@@ -9,5 +9,11 @@ public interface EmbeddingService {
 
     Embedding embed(DocumentChunk chunk);
 
+    /**
+     * Embeds a user search query using the same provider and
+     * configuration as chunk embedding.
+     */
+    Embedding embedQuery(String query);
+
     List<Embedding> embedAll(List<DocumentChunk> chunks);
 }

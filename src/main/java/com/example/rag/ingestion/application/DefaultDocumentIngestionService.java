@@ -1,3 +1,4 @@
+
 package com.example.rag.ingestion.application;
 
 import com.example.rag.ingestion.domain.document.Document;
@@ -7,25 +8,36 @@ import com.example.rag.ingestion.domain.DocumentStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Service
 public class DefaultDocumentIngestionService
         implements DocumentIngestionService {
 
     private final DocumentRepository documentRepository;
+    private final DocumentIndexer documentIndexer;
 
     public DefaultDocumentIngestionService(
-            DocumentRepository documentRepository) {
-        this.documentRepository = documentRepository;
+            DocumentRepository documentRepository,
+            DocumentIndexer documentIndexer
+    ) {
+        this.documentRepository = Objects.requireNonNull(
+                documentRepository,
+                "documentRepository must not be null"
+        );
+
+        this.documentIndexer = Objects.requireNonNull(
+                documentIndexer,
+                "documentIndexer must not be null"
+        );
     }
 
     @Override
     public Document ingest(IngestDocumentCommand command) {
-
-        DocumentId documentId = DocumentId.generate();
+        Objects.requireNonNull(command, "command must not be null");
 
         Document document = new Document(
-                documentId,
+                DocumentId.generate(),
                 command.name(),
                 command.content(),
                 command.metadata(),
@@ -33,6 +45,10 @@ public class DefaultDocumentIngestionService
                 Instant.now()
         );
 
-        return documentRepository.save(document);
+        Document savedDocument = documentRepository.save(document);
+
+        documentIndexer.index(savedDocument);
+
+        return savedDocument;
     }
 }

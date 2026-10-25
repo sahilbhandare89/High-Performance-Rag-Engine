@@ -1,35 +1,49 @@
+
 package com.example.rag.vector.infrastracture.memory;
 
 import com.example.rag.embedding.domain.VectorRecord;
 import com.example.rag.ingestion.domain.chunking.ChunkId;
 import com.example.rag.ingestion.domain.document.DocumentId;
+import com.example.rag.vector.application.DocumentMetadataLookup;
 import com.example.rag.vector.application.VectorRepository;
 import com.example.rag.vector.application.VectorSearchRequest;
 import com.example.rag.vector.application.VectorSearchResult;
 import com.example.rag.vector.application.similarity.SimilarityCalculator;
+import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
 public class InMemoryVectorRepository implements VectorRepository {
 
     private final Map<VectorKey, VectorRecord> vectors =
             new ConcurrentHashMap<>();
 
     private final SimilarityCalculator similarityCalculator;
+    private final DocumentMetadataLookup metadataLookup;
 
     public InMemoryVectorRepository(
-            SimilarityCalculator similarityCalculator
+            SimilarityCalculator similarityCalculator,
+            DocumentMetadataLookup metadataLookup
     ) {
         this.similarityCalculator = Objects.requireNonNull(
                 similarityCalculator,
                 "similarityCalculator must not be null"
         );
+
+        this.metadataLookup = Objects.requireNonNull(
+                metadataLookup,
+                "metadataLookup must not be null"
+        );
     }
 
     @Override
     public VectorRecord save(VectorRecord vector) {
-
         Objects.requireNonNull(
                 vector,
                 "vector must not be null"
@@ -47,7 +61,6 @@ public class InMemoryVectorRepository implements VectorRepository {
 
     @Override
     public void saveAll(Collection<VectorRecord> vectors) {
-
         Objects.requireNonNull(
                 vectors,
                 "vectors must not be null"
@@ -60,7 +73,6 @@ public class InMemoryVectorRepository implements VectorRepository {
 
     @Override
     public void deleteByDocumentId(DocumentId documentId) {
-
         Objects.requireNonNull(
                 documentId,
                 "documentId must not be null"
@@ -92,6 +104,15 @@ public class InMemoryVectorRepository implements VectorRepository {
 
         for (VectorRecord vector : vectors.values()) {
 
+            // Filter by document metadata before computing similarity.
+            if (!request.metadataFilters().isEmpty()
+                    && !metadataLookup.matches(
+                    vector.documentId(),
+                    request.metadataFilters()
+            )) {
+                continue;
+            }
+
             double similarity =
                     similarityCalculator.cosineSimilarity(
                             request.queryEmbedding(),
@@ -99,25 +120,19 @@ public class InMemoryVectorRepository implements VectorRepository {
                     );
 
             VectorSearchResult result =
-                    new VectorSearchResult(
-                            vector,
-                            similarity
-                    );
+                    new VectorSearchResult(vector, similarity);
 
             if (topResults.size() < request.topK()) {
-
                 topResults.offer(result);
-
             } else if (
-                    similarity >
-                            topResults.peek().similarity()
+                    similarity > topResults.peek().similarity()
             ) {
-
                 topResults.poll();
                 topResults.offer(result);
             }
         }
 
+        // Return results in descending similarity order.
         return topResults.stream()
                 .sorted(
                         (first, second) ->

@@ -6,6 +6,8 @@ import com.example.rag.ingestion.domain.DocumentRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
@@ -19,5 +21,12 @@ public class InMemoryDocumentRepository
     public Document save(Document document) {
         documents.put(document.id(), document);
         return document;
+    }
+
+    @Override
+    public Optional<Document> findById(DocumentId documentId) {
+        Objects.requireNonNull(documentId, "documentId must not be null");
+
+        return Optional.ofNullable(documents.get(documentId));
     }
 }

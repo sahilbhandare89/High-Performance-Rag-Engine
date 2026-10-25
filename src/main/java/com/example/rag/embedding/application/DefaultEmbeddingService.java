@@ -41,6 +41,19 @@ public final class DefaultEmbeddingService
     }
 
     @Override
+    public Embedding embedQuery(String text) {
+        Objects.requireNonNull(text, "text must not be null");
+
+        if (text.isBlank()) {
+            throw new IllegalArgumentException(
+                    "text must not be blank"
+            );
+        }
+
+        return provider.embed(text);
+    }
+
+    @Override
     public List<Embedding> embedAll(
             List<DocumentChunk> chunks
     ) {
